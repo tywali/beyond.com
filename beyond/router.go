@@ -8,8 +8,8 @@ type ControllerList struct {
 	routerMap map[string] ControllerInterface
 }
 
-func init() {
-
+func (cl *ControllerList) Init() {
+	cl.routerMap = make(map[string] ControllerInterface)
 }
 
 func (cl *ControllerList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
@@ -25,9 +25,6 @@ func (cl *ControllerList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (cl *ControllerList) Add(pattern string, c ControllerInterface) {
-	if cl.routerMap == nil {
-		cl.routerMap = make(map[string] ControllerInterface)
-	}
 	cl.routerMap[pattern] = c
 }
 

@@ -7,6 +7,10 @@ import (
 
 var controllList  = new(ControllerList)
 
+func init()  {
+	controllList.Init()
+}
+
 func Router(pattern string, c ControllerInterface) {
 	controllList.Add(pattern, c)
 }
