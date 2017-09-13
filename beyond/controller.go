@@ -20,12 +20,14 @@ type ControllerInterface interface {
 	CheckXSRFCookie() bool
 	HandlerFunc(fn string) bool
 	URLMapping()*/
+	InitParmsSetting(map[int] string)
 }
 
 type Controller struct {
 	Rw http.ResponseWriter
 	Req *http.Request
-	Param map[interface{}]interface{}
+
+	parmNames map[int] string
 }
 
 func (c *Controller) Init(rw http.ResponseWriter, r *http.Request) {
@@ -66,4 +68,8 @@ func (c *Controller) Options() {
 
 func (c *Controller) Finish() {
 	fmt.Print("Error get")
+}
+
+func (c *Controller) InitParmsSetting(list map[int] string) {
+	c.parmNames = list
 }

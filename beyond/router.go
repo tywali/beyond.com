@@ -2,6 +2,7 @@ package beyond
 
 import (
 	"net/http"
+	"strings"
 )
 
 type ControllerList struct {
@@ -44,10 +45,42 @@ func (cl *ControllerList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (cl *ControllerList) Add(pattern string, c ControllerInterface) {
-	cl.routerMap[pattern] = c
+	parms := make(map[int] string)
+	idx := 0
+	path := "/"
+	semi := strings.Split(pattern, "/")
+	for _, v := range semi {
+		if strings.HasPrefix(v, ":") {
+			parms[idx] = v[1:len(v)]
+			idx++
+		} else {
+			path += v
+		}
+	}
+	c.InitParmsSetting(parms)
+	cl.routerMap[path] = c
 }
 
 func (cl *ControllerList) getController(pattern string) ControllerInterface{
-	action := cl.routerMap[pattern]
+	idx := -1
+	path := "/"
+	semi := strings.Split(pattern, "/")
+	found := false
+	parms := make(map[int] string)
+	//action := nil
+	var action ControllerInterface
+	for _, v := range semi {
+		path += v
+		if !found {
+			action = cl.routerMap[path]
+			if action != nil {
+				found = true
+			}
+		}
+		if found {
+			parms[idx] = v
+			idx++
+		}
+	}
 	return action
 }
