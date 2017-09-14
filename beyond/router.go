@@ -45,19 +45,20 @@ func (cl *ControllerList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (cl *ControllerList) Add(pattern string, c ControllerInterface) {
-	parms := make(map[int] string)
+	ctx := new(Context)
+	ctx.Init()
 	idx := 0
 	path := "/"
 	semi := strings.Split(pattern, "/")
 	for _, v := range semi {
 		if strings.HasPrefix(v, ":") {
-			parms[idx] = v[1:len(v)]
+			ctx.AddParam(idx, v[1:len(v)])
 			idx++
 		} else {
 			path += v
 		}
 	}
-	c.InitParmsSetting(parms)
+	c.SetContext(ctx)
 	cl.routerMap[path] = c
 }
 
@@ -66,8 +67,6 @@ func (cl *ControllerList) getController(pattern string) ControllerInterface{
 	path := "/"
 	semi := strings.Split(pattern, "/")
 	found := false
-	parms := make(map[int] string)
-	//action := nil
 	var action ControllerInterface
 	for _, v := range semi {
 		path += v
@@ -78,7 +77,7 @@ func (cl *ControllerList) getController(pattern string) ControllerInterface{
 			}
 		}
 		if found {
-			parms[idx] = v
+			action.GetContext().AddParamVal(idx, v)
 			idx++
 		}
 	}
