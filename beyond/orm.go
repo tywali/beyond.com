@@ -6,19 +6,10 @@ import (
 	"strings"
 )
 
-type BaseModel struct {
-	EntityType reflect.Type
-	tableName     string            //表名
-	pk            string            //主键
-	columnToField map[string]string //字段名:属性名
-	fieldToColumn map[string]string //属性名:字段名
-	Entity interface{}
-}
-
-type IBaseDao interface {
+/*type IBaseDao interface {
 	Init()
 	Register(model interface{})
-}
+}*/
 
 type BaseDao struct {
 	modelList map[string] *BaseModel

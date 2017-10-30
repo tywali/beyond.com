@@ -2,6 +2,8 @@ package beyond
 
 import (
 	"fmt"
+	"bytes"
+	"strings"
 )
 
 type Query struct {
@@ -9,7 +11,7 @@ type Query struct {
 
 	sqlSelect string
 	sqlFrom string
-	sqlWhere string
+	sqlWhere map[string]string
 }
 
 func (q *Query) SetModel(model *BaseModel)  {
@@ -17,15 +19,42 @@ func (q *Query) SetModel(model *BaseModel)  {
 
 }
 
-func (q *Query) Where(condition string) *Query  {
+func (q *Query) Where(condition map[string]string) *Query  {
 	q.sqlWhere = condition
 	return q
 }
 
 func (q *Query) All() interface{} {
-	sql := "select * from " + q.model.tableName + " where " + q.sqlWhere
+	var sql = ""
+	sql = q.createSelect()
+	sql += q.model.tableName
+	sql += q.createWhere()
+
 	fmt.Println(sql)
 	return ""
 }
 
+func (q *Query) createSelect() string {
+	var sql = ""
+	var buf bytes.Buffer
+	for _, v := range q.model.columnToField {
+		buf.WriteString(" " + v  + ", ")
+	}
+	sql = "select " + buf.String() + " from "
+	sql = strings.Replace(sql, ",  from", " from", -1)
+	return sql
+}
 
+func (q *Query) createWhere() string {
+	var sql = ""
+
+	var buf bytes.Buffer
+	for k, v := range q.sqlWhere {
+		buf.WriteString(" " + k + " = '" + v + "' and ")
+	}
+	buf.WriteString(",")
+	sql = " where " + buf.String()
+	sql = strings.Replace(sql, "and ,", "", -1)
+
+	return sql
+}
