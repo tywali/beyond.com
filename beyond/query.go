@@ -8,6 +8,7 @@ import (
 
 type Query struct {
 	model *BaseModel
+	db *Dao
 
 	sqlSelect string
 	sqlFrom string
@@ -31,6 +32,9 @@ func (q *Query) All() interface{} {
 	sql += q.createWhere()
 
 	fmt.Println(sql)
+
+	q.db.Query(sql, q.model.EntityType)
+
 	return ""
 }
 

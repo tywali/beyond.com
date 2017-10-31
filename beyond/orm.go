@@ -6,22 +6,20 @@ import (
 	"strings"
 )
 
-/*type IBaseDao interface {
-	Init()
-	Register(model interface{})
-}*/
-
-type BaseDao struct {
+type BaseOrm struct {
 	modelList map[string] *BaseModel
+	db *Dao
 
 	curModel *BaseModel
 }
 
-func (dao *BaseDao) Init() {
+func (dao *BaseOrm) Init() {
 	dao.modelList = make(map[string] *BaseModel)
+	dao.db = new(Dao)
+	dao.db.Connect()
 }
 
-func (dao *BaseDao) Register(model interface{})  {
+func (dao *BaseOrm) Register(model interface{})  {
 	modelType := reflect.TypeOf(model)
 	str := strings.Split(fmt.Sprintf("%s", modelType), ".")
 	modelName := str[len(str) - 1]
@@ -53,21 +51,22 @@ func (dao *BaseDao) Register(model interface{})  {
 	dao.modelList[strings.ToLower(modelName)] = m
 }
 
-func (dao *BaseDao) Model(name string) *BaseDao {
+func (dao *BaseOrm) Model(name string) *BaseOrm {
 	dao.curModel = dao.modelList[strings.ToLower(name)]
 	return dao
 }
 
-func (dao *BaseDao) Find() *Query {
+func (dao *BaseOrm) Find() *Query {
 	q := new(Query)
 	q.model = dao.curModel
+	q.db = dao.db
 	return q
 }
 
-func (dao *BaseDao) NewModel(name string) interface{} {
+func (dao *BaseOrm) NewModel(name string) interface{} {
 	return dao.modelList[strings.ToLower(name)].Entity
 }
 
-func (dao *BaseDao) Save(model interface{})  {
+func (dao *BaseOrm) Save(model interface{})  {
 	fmt.Println("save")
 }
