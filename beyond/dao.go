@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"fmt"
-	"reflect"
-	"strconv"
+	//"reflect"
+	//"strconv"
 )
 
 type Dao struct {
@@ -19,8 +19,14 @@ func (dao *Dao) Connect() (*sql.DB, error) {
 	return dao.db, dao.err
 }
 
-func (dao *Dao) Query(sqlSelect string, entityType reflect.Type) {
+func (dao *Dao) Query(sqlSelect string, parseFunc func([]string, []interface{}) interface{}) []interface{} {
 	//var err error
+	countSql := "select count(*) from ( " + sqlSelect + " ) AS TT"
+	fmt.Println(countSql)
+	var count int64
+	dao.db.QueryRow(countSql).Scan(&count)
+	resultSet := make([]interface{}, count)
+
 	rows, _ := dao.db.Query(sqlSelect)
 
 	columns, _ := rows.Columns()
@@ -30,29 +36,13 @@ func (dao *Dao) Query(sqlSelect string, entityType reflect.Type) {
 		scanArgs[i] = &values[i]
 	}
 
+	idx := 0
 	for rows.Next() {
-		//将行数据保存到record字典
 		rows.Scan(scanArgs...)
-		obj := reflect.New(entityType).Interface()
-		typ := reflect.ValueOf(obj).Elem()
-
-		fmt.Println(obj, typ)
-		//record := make(map[string]string)
-		for i, col := range values {
-			if col != nil {
-				field := typ.FieldByName(columns[i])
-				sVal := string(col.([]byte))
-				switch field.Kind() {
-				case reflect.String:
-					field.SetString(sVal)
-				case reflect.Int:
-					v, _ := strconv.ParseInt(sVal, 10, 0)
-					field.SetInt(v)
-				}
-				//record[columns[i]] = string(col.([]byte))
-			}
-		}
-		fmt.Println(obj)
-		//fmt.Println(record)
+		//使用传入的函数，按照需要处理结果的形式
+		obj := parseFunc(columns, values)
+		resultSet[idx] = obj
+		idx++
 	}
+	return resultSet
 }
